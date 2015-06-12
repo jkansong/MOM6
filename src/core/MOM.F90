@@ -2498,7 +2498,68 @@ subroutine write_static_fields(G, diag)
   id = register_static_field('ocean_model', 'Coriolis', diag%axesB1, &
         'Coriolis parameter at corner (Bu) points', 's-1')
   if (id > 0) call post_data(id, G%CoriolisBu, diag, .true.)
+!! Joe
+  id = register_static_field('ocean_model', 'Coriolish', diag%axesT1, &
+        'Coriolis parameter at h points', 's-1')
+  if (id > 0) call post_data(id, G%Coriolish, diag, .true.)
+!!
+  id = register_static_field('ocean_model', 'tensor_t11', diag%axesT1, &
+        'Component of topo drag tensor', 'm', &
+        standard_name='Topographic_drag_tensor')
+  if (id > 0) call post_data(id, G%t11, diag, .true.)
+!
+  id = register_static_field('ocean_model', 'tensor_t12', diag%axesT1, &
+        'Component of topo drag tensor', 'm', &
+        standard_name='Topographic_drag_tensor')
+  if (id > 0) call post_data(id, G%t12, diag, .true.)
+ 
+  id = register_static_field('ocean_model', 'tensor_t21', diag%axesT1, &
+        'Component of topo drag tensor', 'm', &
+        standard_name='Topographic_drag_tensor')
+  if (id > 0) call post_data(id, G%t21, diag, .true.)
 
+  id = register_static_field('ocean_model', 'tensor_t22', diag%axesT1, &
+        'Component of topo drag tensor', 'm', &
+        standard_name='Topographic_drag_tensor')
+  if (id > 0) call post_data(id, G%t22, diag, .true.)
+!!
+
+  id = register_static_field('ocean_model', 'hkmin', diag%axesT1, &
+        'Topography min', 'm', &
+        standard_name='Topographic min amplitude')
+  if (id > 0) call post_data(id, G%hkmin, diag, .true.)
+ 
+  id = register_static_field('ocean_model', 'hkmax', diag%axesT1, &
+        'Topographic max', 'm', &
+        standard_name='Topographic max amplitude')
+  if (id > 0) call post_data(id, G%hkmax, diag, .true.)
+
+
+  id = register_static_field('ocean_model', 'N', diag%axesT1, &
+        'Bottom N', 'm', &
+        standard_name='Bottom buoyancy frequency')
+  if (id > 0) call post_data(id, G%ss, diag, .true.)
+
+  id = register_static_field('ocean_model', 'dragmask', diag%axesT1, &
+        'Topographic mask', 'm', &
+        standard_name='Topographic mask')
+  if (id > 0) call post_data(id, G%dragmask, diag, .true.)
+
+  id = register_static_field('ocean_model', 'ssharmonic', diag%axesT1, &
+        'Type of N', 'm', &
+        standard_name='Type of Buoyancy freq')
+  if (id > 0) call post_data(id, G%ssharmonic, diag, .true.)
+  
+  id = register_static_field('ocean_model', 'dragfac', diag%axesT1, &
+        'Topographic drag', 'm', &
+        standard_name='Topographic drag')
+  if (id > 0) call post_data(id, G%dragfac, diag, .true.)
+
+  id = register_static_field('ocean_model', 'deltaum', diag%axesT1, &
+        'zonalvel drag', 'm', &
+        standard_name='zonal velocity with drag')
+  if (id > 0) call post_data(id, G%deltaum, diag, .true.)
+!! endJoe
 end subroutine write_static_fields
 
 ! ============================================================================

@@ -36,6 +36,10 @@ use MOM_EOS, only : int_specific_vol_dp
 use user_initialization, only : user_initialize_thickness, user_initialize_velocity
 use user_initialization, only : user_init_temperature_salinity
 use user_initialization, only : user_set_Open_Bdry_Conds, user_initialize_sponges
+! Joe
+use user_initialization, only : MOM_read_topodrag,read_topodrag
+use user_initialization, only: set_rotation_fath,init_topodrag
+! endJoe
 use DOME_initialization, only : DOME_initialize_thickness
 use DOME_initialization, only : DOME_set_Open_Bdry_Conds
 use DOME_initialization, only : DOME_initialize_sponges
@@ -146,6 +150,9 @@ subroutine MOM_initialize_state(u, v, h, tv, Time, G, PF, dirs, &
   type(EOS_type), pointer :: eos => NULL()
   logical :: debug    ! indicates whether to write debugging output
 ! This include declares and sets the variable "version".
+! Joe
+  logical :: use_topodrag  !whether to apply topographic drag
+! endJoe
 #include "version_variable.h"
   integer :: i, j, k, is, ie, js, je, Isq, Ieq, Jsq, Jeq, nz
   integer :: isd, ied, jsd, jed, IsdB, IedB, JsdB, JedB
@@ -171,7 +178,25 @@ subroutine MOM_initialize_state(u, v, h, tv, Time, G, PF, dirs, &
   use_EOS = associated(tv%eqn_of_state)
   if (use_EOS) eos => tv%eqn_of_state
 
+! Joe
+  call get_param(PF, mod, "TOPODRAG", use_topodrag, &
+                 "Apply topographic drag.", default=.false.)
+! endJoe
 
+! Joe
+!  Calculate the value of the Coriolis parameter at the latitude   !
+!  of the h grid points, in s-1.
+  if (use_topodrag) then
+  call set_rotation_fath(G%Coriolish, G, PF)
+  
+  call MOM_read_topodrag(G%t11,G%t12,G%t21,G%t22,G%hkmin,G%hkmax, & 
+                               G%ss,G%dragmask, G, PF)
+
+  call init_topodrag(G%Coriolish, G%t11, G%t12, G%t21, G%t22, G%ss, & 
+                      G%hkmin, G%hkmax, G%dragmask, G%dragfac, & 
+                           G%ssharmonic, G, PF)
+  endif
+! endJoe
 !====================================================================
 !    Initialize temporally evolving fields, either as initial
 !  conditions or by reading them from a restart (or saves) file.
