@@ -110,6 +110,10 @@ use MOM_vert_friction, only : vertvisc, vertvisc_coef
 use MOM_vert_friction, only : vertvisc_limit_vel, vertvisc_init, vertvisc_CS
 use MOM_set_visc, only : set_viscous_BBL, set_viscous_ML, set_visc_CS
 
+! Joe
+use user_initialization, only : MOM_read_topodrag,read_topodrag
+use user_initialization, only: set_rotation_fath,init_topodrag,topo_drag
+! endJoe
 implicit none ; private
 
 #include <MOM_memory.h>
@@ -130,7 +134,9 @@ type, public :: MOM_dyn_unsplit_CS ; private
     ! The frictional bottom stresses from the ocean to the seafloor, in Pa.
 
   logical :: debug           ! If true, write verbose checksums for debugging purposes.
-
+! Joe
+  logical :: use_topodrag    
+! endJoe
   logical :: module_is_initialized = .false.
 
   integer :: id_uh = -1, id_vh = -1
@@ -362,15 +368,37 @@ subroutine step_MOM_dyn_unsplit(u, v, h, tv, visc, Time_local, dt, fluxes, &
  ! up <- up + dt/2 d/dz visc d/dz up
   call cpu_clock_begin(id_clock_vertvisc)
   call enable_averaging(dt, Time_local, CS%diag)
-  call set_viscous_ML(u, v, h_av, tv, fluxes, visc, dt*0.5, G, &
+
+! Joe
+  if (CS%use_topodrag) then !use dt_pred like HIM.c with wave drag
+    call set_viscous_ML(u, v, h_av, tv, fluxes, visc, dt_pred, G, &
                       CS%set_visc_CSp)
-  call disable_averaging(CS%diag)
-  call vertvisc_coef(up, vp, h_av, fluxes, visc, dt*0.5, G, CS%vertvisc_CSp)
-  call vertvisc(up, vp, h_av, fluxes, visc, dt*0.5, CS%OBC, CS%ADp, CS%CDp, G, &
+    call disable_averaging(CS%diag)
+    call vertvisc_coef(up, vp, h_av, fluxes, visc, dt_pred, G, CS%vertvisc_CSp)
+    call vertvisc(up, vp, h_av, fluxes, visc, dt_pred, CS%OBC, CS%ADp, CS%CDp, G, &
                 CS%vertvisc_CSp)
+  else !original code below (using dt*0.05)
+
+    call set_viscous_ML(u, v, h_av, tv, fluxes, visc, dt*0.5, G, &
+                      CS%set_visc_CSp)
+    call disable_averaging(CS%diag)
+    call vertvisc_coef(up, vp, h_av, fluxes, visc, dt*0.5, G, CS%vertvisc_CSp)
+    call vertvisc(up, vp, h_av, fluxes, visc, dt*0.5, CS%OBC, CS%ADp, CS%CDp, G, &
+                CS%vertvisc_CSp)
+  endif
+! endJoe
+  
   call cpu_clock_end(id_clock_vertvisc)
   call cpu_clock_begin(id_clock_pass)
   call pass_vector(up, vp, G%Domain)
+ 
+! Joe
+  if (CS%use_topodrag) then
+  call topo_drag(up, vp, h_av, dt_pred, G,G%t11,G%t12,G%t21,G%t22, G%dragfac)
+  call pass_vector(up, vp, G%Domain)
+  endif
+! endJoe
+
   call cpu_clock_end(id_clock_pass)
 
 ! uh = up * hp
@@ -430,6 +458,14 @@ subroutine step_MOM_dyn_unsplit(u, v, h, tv, visc, Time_local, dt, fluxes, &
   call cpu_clock_end(id_clock_vertvisc)
   call cpu_clock_begin(id_clock_pass)
   call pass_vector(upp, vpp, G%Domain)
+
+! Joe
+  if (CS%use_topodrag) then
+  call topo_drag(upp, vpp, hp, dt*0.5, G,G%t11,G%t12,G%t21,G%t22, G%dragfac)
+  call pass_vector(upp, vpp, G%Domain)
+  endif
+! endJoe 
+
   call cpu_clock_end(id_clock_pass)
 
 ! uh = upp * hp
@@ -493,6 +529,14 @@ subroutine step_MOM_dyn_unsplit(u, v, h, tv, visc, Time_local, dt, fluxes, &
   call cpu_clock_end(id_clock_vertvisc)
   call cpu_clock_begin(id_clock_pass)
   call pass_vector(u, v, G%Domain)
+
+! Joe
+  if (CS%use_topodrag) then
+  call topo_drag(u, v, h_av, dt, G,G%t11,G%t12,G%t21,G%t22, G%dragfac)
+  call pass_vector(u, v, G%Domain)
+  endif
+! endJoe 
+
   call cpu_clock_end(id_clock_pass)
 
   if (CS%debug) then
@@ -641,6 +685,11 @@ subroutine initialize_dyn_unsplit(u, v, h, Time, G, param_file, diag, CS, &
                  "If true, write out verbose debugging data.", default=.false.)
   call get_param(param_file, mod, "TIDES", use_tides, &
                  "If true, apply tidal momentum forcing.", default=.false.)
+
+! Joe
+  call get_param(param_file, mod, "TOPODRAG", CS%use_topodrag, &
+                 "Apply topographic drag if true.", default=.false.)
+! endJoe
 
   allocate(CS%taux_bot(IsdB:IedB,jsd:jed)) ; CS%taux_bot(:,:) = 0.0
   allocate(CS%tauy_bot(isd:ied,JsdB:JedB)) ; CS%tauy_bot(:,:) = 0.0
