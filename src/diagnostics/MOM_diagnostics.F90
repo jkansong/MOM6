@@ -82,6 +82,9 @@ type, public :: diagnostics_CS ; private
   real, pointer, dimension(:,:,:) :: &
     e => NULL(), &   ! interface height (metre)
     e_D => NULL()    ! interface height above bottom (metre)
+! Joe
+    eta_anom => NULL()    ! The interface height anomaly, in m.
+! endJoe
 
   ! following fields have nz layers.
   real, pointer, dimension(:,:,:) :: &
@@ -143,7 +146,9 @@ type, public :: diagnostics_CS ; private
   integer :: id_temp_layer_ave = -1, id_salt_layer_ave = -1
   integer :: id_pbo            = -1
   integer :: id_thkcello       = -1
-
+! Joe
+  integer :: id_eta_anom = -1
+! endJoe
   type(wave_speed_CS), pointer :: wave_speed_CSp => NULL()  
 
   ! pointers used in calculation of time derivatives
@@ -222,6 +227,13 @@ subroutine calculate_diagnostic_fields(u, v, h, uh, vh, tv, ADp, CDp, fluxes, &
 
   real, dimension(SZK_(G)) :: temp_layer_ave, salt_layer_ave
   real :: thetaoga, soga, masso, tosga, sosga
+! Joe
+  real :: e0(SZK_(G)+1)   ! The resting interface heights, in m, usually !
+
+                          ! negative because it is positive upward.      !
+  real, dimension(SZI_(G),SZJ_(G),SZK_(G)+1) :: ej ! Interface height in m.
+                ! in seawater, but e will still be close to the interface depth.
+! endJoe  
 
   is  = G%isc  ; ie   = G%iec  ; js  = G%jsc  ; je  = G%jec
   Isq = G%IscB ; Ieq  = G%IecB ; Jsq = G%JscB ; Jeq = G%JecB
@@ -244,6 +256,36 @@ subroutine calculate_diagnostic_fields(u, v, h, uh, vh, tv, ADp, CDp, fluxes, &
     call find_eta(h, tv, G%g_Earth, G, CS%e, eta_bt)
     if (CS%id_e > 0) call post_data(CS%id_e, CS%e, CS%diag)
   endif
+
+!! Joe-----compute interface height anomalies------ 
+  if (ASSOCIATED(CS%eta_anom)) then    
+
+  !! calculate e (here ej) --> position of interface (from depth=0)
+  !! ==== e(i,j,k)= -D(i,j) + sum( h(i,j,K= k:nk) )
+    call find_eta(h, tv, G%g_Earth, G, ej, eta_bt) 
+
+   !! calculate resting layer depths
+    do k=1,nz
+      e0(K) = -G%max_depth * real(k-1) / real(nz)
+    enddo
+   e0(nz) = G%tdepth !comment to use uniform depths (negative), 
+                     !tdepth is definded in /core/MOM_grid.F90
+  
+   !! calculate interface height anomalies, eta_anom 
+    do k=1,nz 
+      do j=js,je 
+        do i=is,ie
+          if(G%bathyT(i,j) >= -e0(k) ) then
+           CS%eta_anom(i,j,k)= ej(i,j,k)-e0(k)
+          else
+          CS%eta_anom(i,j,k)=1.0e-10
+          endif
+        enddo
+      enddo
+    enddo
+    if (CS%id_eta_anom > 0) call post_data(CS%id_eta_anom, CS%eta_anom, CS%diag)
+  endif
+!! endJoe------------------------------------------
 
   if (ASSOCIATED(CS%e_D)) then
     if (ASSOCIATED(CS%e)) then
@@ -1110,7 +1152,11 @@ subroutine MOM_diagnostics_init(MIS, ADp, CDp, Time, G, param_file, diag, CS, &
   CS%id_e_D = register_diag_field('ocean_model', 'e_D', diag%axesTi, Time, &
       'Interface Height above the Seafloor', 'meter')
   if (CS%id_e_D>0) call safe_alloc_ptr(CS%e_D,isd,ied,jsd,jed,nz+1)
-
+! Joe
+  CS%id_eta_anom = register_diag_field('ocean_model', 'eta_anom', diag%axesTL, Time, &
+      'Interface Height anomaly', 'meter')
+  if (CS%id_eta_anom>0) call safe_alloc_ptr(CS%eta_anom,isd,ied,jsd,jed,nz)
+! endJoe
   CS%id_Rml = register_diag_field('ocean_model', 'Rml', diag%axesTL, Time, &
       'Mixed Layer Coordinate Potential Density', 'kg meter-3')
 
@@ -1318,6 +1364,9 @@ subroutine MOM_diagnostics_end(CS, ADp)
 
   if (ASSOCIATED(CS%e))          deallocate(CS%e)
   if (ASSOCIATED(CS%e_D))        deallocate(CS%e_D)
+! Joe
+  if (ASSOCIATED(CS%eta_anom))   deallocate(CS%eta_anom)
+! endJoe
   if (ASSOCIATED(CS%KE))         deallocate(CS%KE)
   if (ASSOCIATED(CS%dKE_dt))     deallocate(CS%dKE_dt)
   if (ASSOCIATED(CS%PE_to_KE))   deallocate(CS%PE_to_KE)
