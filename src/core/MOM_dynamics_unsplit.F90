@@ -392,16 +392,10 @@ subroutine step_MOM_dyn_unsplit(u, v, h, tv, visc, Time_local, dt, fluxes, &
  
 !Joe
   if (CS%debug) then
-    call MOM_state_chksum("Ansong 1", up, vp, h_av, uh, vh, G)
+    call MOM_state_chksum("Ansong 1", up,vp,h_av,dt_pred,G,G%t11)
   endif
 !endJoe
 ! Joe
-!    if (CS%debug) then
-!     call MOM_state_chksum("After topo_drag up,vp", up, vp, h_av, &
-!                    dt_pred,G,G%t11 )
-!!     call MOM_state_chksum("After topo_drag up,vp", up, vp, h_av, &
-!!                    dt_pred,G,G%t11,G%t12,G%t21,G%t22, G%dragfac)
-!    endif
   if (CS%use_topodrag) then
 !   if (CS%debug) then
 !    call MOM_state_chksum("After topo_drag up,vp", up, vp, h_av, & 
