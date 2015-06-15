@@ -344,7 +344,11 @@ subroutine step_MOM_dyn_unsplit(u, v, h, tv, visc, Time_local, dt, fluxes, &
     call MOM_accel_chksum("Predictor 1 accel", CS%CAu, CS%CAv, CS%PFu, CS%PFv,&
                           CS%diffu, CS%diffv, G)
   endif
-
+!Joe
+  if (CS%debug) then
+    call MOM_state_chksum("Ansong 1", up, vp, h_av, uh, vh, G)
+  endif
+!endJoe
 ! visc contains viscosity and BBL thickness (u_in,h_in)
   if (visc%calc_bbl) then
     call enable_averaging(visc%bbl_calc_time_interval, &
@@ -393,12 +397,12 @@ subroutine step_MOM_dyn_unsplit(u, v, h, tv, visc, Time_local, dt, fluxes, &
   call pass_vector(up, vp, G%Domain)
  
 ! Joe
-    if (CS%debug) then
-     call MOM_state_chksum("After topo_drag up,vp", up, vp, h_av, &
-                    dt_pred,G,G%t11 )
+!    if (CS%debug) then
 !     call MOM_state_chksum("After topo_drag up,vp", up, vp, h_av, &
-!                    dt_pred,G,G%t11,G%t12,G%t21,G%t22, G%dragfac)
-    endif
+!                    dt_pred,G,G%t11 )
+!!     call MOM_state_chksum("After topo_drag up,vp", up, vp, h_av, &
+!!                    dt_pred,G,G%t11,G%t12,G%t21,G%t22, G%dragfac)
+!    endif
   if (CS%use_topodrag) then
 !    if (CS%debug) then
 !     call MOM_state_chksum("After topo_drag up,vp", up, vp, h_av, &
