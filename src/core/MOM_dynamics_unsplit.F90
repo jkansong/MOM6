@@ -390,26 +390,25 @@ subroutine step_MOM_dyn_unsplit(u, v, h, tv, visc, Time_local, dt, fluxes, &
   call cpu_clock_begin(id_clock_pass)
   call pass_vector(up, vp, G%Domain)
  
-!Joe
-  if (CS%debug) then
-!    call MOM_state_chksum("Predictor 1", up, vp, h_av, uh, vh, G)
-    call MOM_state_chksum("Ansong 1", up,vp,h_av,uh,G,G%t11)
-  endif
-!endJoe
+!!Joe
+!  if (CS%debug) then
+!!    call MOM_state_chksum("Predictor 1", up, vp, h_av, uh, vh, G)
+!    call MOM_state_chksum("Ansong 1", up,vp,h_av,uh,G)
+!  endif
+!!endJoe
+
 ! Joe
   if (CS%use_topodrag) then
-!   if (CS%debug) then
-!    call MOM_state_chksum("After topo_drag up,vp", up, vp, h_av, & 
-!            dt_pred,G,G%t11,G%t12,G%t21,G%t22, G%dragfac)
-!   endif
+   if (CS%debug) then
+    call MOM_state_chksum("After topo_drag up,vp", up, vp, h_av,uh,vh,G)
+   endif
   call topo_drag(up, vp, h_av, dt_pred, G,G%t11,G%t12,G%t21,G%t22, G%dragfac)
   call pass_vector(up, vp, G%Domain)
-!    if (CS%debug) then
-!     call MOM_state_chksum("After topo_drag up,vp", up, vp, h_av, & 
-!                   dt_pred,G )
-!!     call MOM_state_chksum("After topo_drag up,vp", up, vp, h_av, &
-!!                    dt_pred,G,G%t11,G%t12,G%t21,G%t22, G%dragfac)
-!    endif
+
+   if (CS%debug) then
+    call MOM_state_chksum("After topo_drag up,vp", up, vp, h_av, uh,vh,G) 
+   endif
+
   endif
 ! endJoe
 
