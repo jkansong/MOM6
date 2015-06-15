@@ -81,7 +81,7 @@ type, public :: diagnostics_CS ; private
   ! following fields have nz+1 levels.
   real, pointer, dimension(:,:,:) :: &
     e => NULL(), &   ! interface height (metre)
-    e_D => NULL()    ! interface height above bottom (metre)
+    e_D => NULL(), &   ! interface height above bottom (metre)
 ! Joe
     eta_anom => NULL()    ! The interface height anomaly, in m.
 ! endJoe

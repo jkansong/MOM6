@@ -149,6 +149,43 @@ type, public :: ocean_grid_type
   real ALLOCABLE_, dimension(NIMEM_,NJMEM_) :: &
     dF_dx, dF_dy  ! Derivatives of f (Coriolis parameter) at h-points, in s-1 m-1.
 
+! Joe
+  real :: tdepth !upper layer depth in 2-layer simulation
+  real :: alinj  !strength of topographic wave drag
+
+  real ALLOCABLE_, dimension(NIMEM_,NJMEM_) :: &
+    Coriolish    ! The Coriolis parameter at h points, in s-1.
+
+  real ALLOCABLE_, dimension(NIMEM_,NJMEM_) :: &
+    t11    ! Tensor component.
+
+  real ALLOCABLE_, dimension(NIMEM_,NJMEM_) :: &
+    t12    ! Tensor component.
+  real ALLOCABLE_, dimension(NIMEM_,NJMEM_) :: &
+    t21    ! Tensor component.
+  real ALLOCABLE_, dimension(NIMEM_,NJMEM_) :: &
+    t22    ! Tensor component.
+
+  real ALLOCABLE_, dimension(NIMEM_,NJMEM_) :: &
+    hkmin    ! Tensor component.
+  real ALLOCABLE_, dimension(NIMEM_,NJMEM_) :: &
+    hkmax    ! Tensor component.
+
+  real ALLOCABLE_, dimension(NIMEM_,NJMEM_) :: &
+    ss    ! Tensor component.
+  real ALLOCABLE_, dimension(NIMEM_,NJMEM_) :: &
+    dragmask    ! Tensor component.
+
+  real ALLOCABLE_, dimension(NIMEM_,NJMEM_) :: &
+    ssharmonic    ! Tensor component.
+ 
+  real ALLOCABLE_, dimension(NIMEM_,NJMEM_) :: &
+    dragfac    ! Tensor component.
+
+  real ALLOCABLE_, dimension(NIMEM_,NJMEM_) :: &
+    deltaum    ! zonal velocity with drag.
+! endJoe
+
   ! The following variables give information about the vertical grid.
   logical :: Boussinesq     ! If true, make the Boussinesq approximation.
   real :: Angstrom      !   A one-Angstrom thickness in the model's thickness
@@ -205,6 +242,9 @@ subroutine MOM_grid_init(G, param_file)
   integer :: IsdB, IedB, JsdB, JedB
   integer :: niblock, njblock, nihalo, njhalo, nblocks, n, i, j
   integer, allocatable, dimension(:) :: ibegin, iend, jbegin, jend
+! Joe
+  real :: tdepth, alinj
+! endJoe
 
   ! get_domain_extent ensures that domains start at 1 for compatibility between
   ! static and dynamically allocated arrays.
@@ -271,6 +311,16 @@ subroutine MOM_grid_init(G, param_file)
                  "in the y-direction on each processor (for openmp).", default=1, &
                  layoutParam=.true.)
 #endif
+
+! Joe
+ call get_param(param_file, "MOM_grid", "TOP_LAYER_DEPTH",tdepth, &
+                 "Depth of upper layer (2-layer)", default=0.0)
+   
+ call get_param(param_file, "MOM_grid", "DRAG_STRENGTH",alinj, &
+                 "Strength of topographic wave drag", default=0.0)
+
+   G%tdepth = tdepth; G%alinj=alinj
+! endJoe
 
   G%ks = 1 ; G%ke = nk
 
@@ -598,7 +648,21 @@ subroutine allocate_metrics(G)
   ALLOC_(G%CoriolisBu(IsdB:IedB, JsdB:JedB)) ; G%CoriolisBu(:,:) = 0.0
   ALLOC_(G%dF_dx(isd:ied, jsd:jed)) ; G%dF_dx(:,:) = 0.0
   ALLOC_(G%dF_dy(isd:ied, jsd:jed)) ; G%dF_dy(:,:) = 0.0
+! Joe
+  ALLOC_(G%Coriolish(isd:ied, jsd:jed)) ; G%Coriolish(:,:) = 0.0
+  ALLOC_(G%t11(isd:ied, jsd:jed)) ; G%t11(:,:) = 0.0
+  ALLOC_(G%t12(isd:ied, jsd:jed)) ; G%t12(:,:) = 0.0
+  ALLOC_(G%t21(isd:ied, jsd:jed)) ; G%t21(:,:) = 0.0
+  ALLOC_(G%t22(isd:ied, jsd:jed)) ; G%t22(:,:) = 0.0
 
+  ALLOC_(G%hkmin(isd:ied, jsd:jed)) ; G%hkmin(:,:) = 0.0
+  ALLOC_(G%hkmax(isd:ied, jsd:jed)) ; G%hkmax(:,:) = 0.0
+  ALLOC_(G%ss(isd:ied, jsd:jed)) ; G%ss(:,:) = 0.0
+  ALLOC_(G%dragmask(isd:ied, jsd:jed)) ; G%dragmask(:,:) = 0.0
+  ALLOC_(G%ssharmonic(isd:ied, jsd:jed)) ; G%ssharmonic(:,:) = 0.0
+  ALLOC_(G%dragfac(isd:ied, jsd:jed)) ; G%dragfac(:,:) = 0.0
+  ALLOC_(G%deltaum(isd:ied, jsd:jed)) ; G%deltaum(:,:) = 0.0
+! endJoe
 end subroutine allocate_metrics
 
 subroutine MOM_grid_end(G)
@@ -630,6 +694,20 @@ subroutine MOM_grid_end(G)
   DEALLOC_(G%bathyT)  ; DEALLOC_(G%CoriolisBu)
   DEALLOC_(G%dF_dx)  ; DEALLOC_(G%dF_dy)
   DEALLOC_(G%g_prime) ; DEALLOC_(G%Rlay)
+! Joe
+  DEALLOC_(G%Coriolish)
+  DEALLOC_(G%t11)
+  DEALLOC_(G%t12)
+  DEALLOC_(G%t21)
+  DEALLOC_(G%t22)
+  DEALLOC_(G%hkmin)
+  DEALLOC_(G%hkmax)
+  DEALLOC_(G%ss)
+  DEALLOC_(G%dragmask)
+  DEALLOC_(G%ssharmonic)
+  DEALLOC_(G%dragfac)
+  DEALLOC_(G%deltaum)
+! endJoe
   deallocate(G%gridLonT) ; deallocate(G%gridLatT)
   deallocate(G%gridLonB) ; deallocate(G%gridLatB)
 
