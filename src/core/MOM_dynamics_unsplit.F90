@@ -367,7 +367,11 @@ subroutine step_MOM_dyn_unsplit(u, v, h, tv, visc, Time_local, dt, fluxes, &
  ! up <- up + dt/2 d/dz visc d/dz up
   call cpu_clock_begin(id_clock_vertvisc)
   call enable_averaging(dt, Time_local, CS%diag)
-
+!Joe
+  if (CS%debug) then
+    call MOM_state_chksum("Ansong 1", up, vp, h_av, uh, vh, G)
+  endif
+!endJoe
 ! Joe
   if (CS%use_topodrag) then !use dt_pred like HIM.c with wave drag
     call set_viscous_ML(u, v, h_av, tv, fluxes, visc, dt_pred, G, &
@@ -399,10 +403,10 @@ subroutine step_MOM_dyn_unsplit(u, v, h, tv, visc, Time_local, dt, fluxes, &
 !!                    dt_pred,G,G%t11,G%t12,G%t21,G%t22, G%dragfac)
 !    endif
   if (CS%use_topodrag) then
-   if (CS%debug) then
-    call MOM_state_chksum("After topo_drag up,vp", up, vp, h_av, & 
-            dt_pred,G,G%t11,G%t12,G%t21,G%t22, G%dragfac)
-   endif
+!   if (CS%debug) then
+!    call MOM_state_chksum("After topo_drag up,vp", up, vp, h_av, & 
+!            dt_pred,G,G%t11,G%t12,G%t21,G%t22, G%dragfac)
+!   endif
   call topo_drag(up, vp, h_av, dt_pred, G,G%t11,G%t12,G%t21,G%t22, G%dragfac)
   call pass_vector(up, vp, G%Domain)
 !    if (CS%debug) then
