@@ -392,6 +392,7 @@ subroutine step_MOM_dyn_unsplit(u, v, h, tv, visc, Time_local, dt, fluxes, &
  
 ! Joe
   if (CS%use_topodrag) then
+       pass_var(h_av,G%Domain)
    if (CS%debug) then
     call MOM_state_chksum("After topo_drag up,vp", up, vp, h_av,uh,vh,G)
    endif
@@ -467,6 +468,7 @@ subroutine step_MOM_dyn_unsplit(u, v, h, tv, visc, Time_local, dt, fluxes, &
 
 ! Joe
   if (CS%use_topodrag) then
+       pass_var(hp,G%Domain)
    if (CS%debug) then
     call MOM_state_chksum("After topo_drag uup,vvp", upp,vpp,hp,uh,vh,G)
    endif
@@ -544,6 +546,7 @@ subroutine step_MOM_dyn_unsplit(u, v, h, tv, visc, Time_local, dt, fluxes, &
 
 ! Joe
   if (CS%use_topodrag) then
+       pass_var(h_av,G%Domain)
    if (CS%debug) then
     call MOM_state_chksum("After topo_drag u,v", u,v,h_av,uh,vh,G)
    endif
