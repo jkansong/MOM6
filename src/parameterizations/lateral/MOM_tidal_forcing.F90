@@ -56,6 +56,11 @@ use MOM_file_parser, only : get_param, log_version, param_file_type
 use MOM_grid, only : ocean_grid_type
 use MOM_io, only : field_exists, file_exists, read_data
 use MOM_time_manager, only : time_type, time_type_to_real
+!Joe
+use MOM_domains, only : MOM_domains_init, pass_var, pass_vector
+use MOM_domains, only : pass_var_start, pass_var_complete
+use MOM_domains, only : pass_vector_start, pass_vector_complete
+!Joe end
 
 implicit none ; private
 
@@ -366,6 +371,8 @@ subroutine tidal_forcing_init(Time, G, param_file, CS)
         CS%sinphasesal(i,j,c) = sin(phase(i,j)*deg_to_rad)
       enddo ; enddo
     enddo
+    call pass_var(phase,G%Domain) !Joe added
+    call pass_var(CS%ampsal,G%Domain) !Joe added
   endif
 
   if (CS%USE_PREV_TIDES) then
@@ -381,6 +388,8 @@ subroutine tidal_forcing_init(Time, G, param_file, CS)
         CS%sinphase_prev(i,j,c) = sin(phase(i,j)*deg_to_rad)
       enddo ; enddo
     enddo
+    call pass_var(phase,G%Domain) !Joe added
+    call pass_var(CS%amp_prev,G%Domain) !Joe added
   endif
 
   id_clock_tides = cpu_clock_id('(Ocean tides)', grain=CLOCK_MODULE)
