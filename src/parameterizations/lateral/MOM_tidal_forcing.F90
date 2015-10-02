@@ -84,6 +84,9 @@ type, public :: tidal_forcing_CS ; private
                       ! height (really it should be bottom pressure) anomalies
                       ! and bottom geopotential anomalies.
   integer :: nc       ! The number of tidal constituents in use.
+!! Joe
+!!  logical :: debug           ! If true, write verbose checksums for debugging purposes.
+!! endJoe
   real, dimension(MAX_CONSTITUENTS) :: &
     freq, &           ! The frequency of a tidal constituent, in s-1.
     phase0, &         ! The phase of a tidal constituent at time 0, in radians.
@@ -364,6 +367,13 @@ subroutine tidal_forcing_init(Time, G, param_file, CS)
     allocate(CS%ampsal(isd:ied,jsd:jed,nc))
     do c=1,nc
       ! Read variables with names like PHASE_SAL_M2 and AMP_SAL_M2.
+    call pass_var(phase, G%Domain) !Joe added
+    call pass_var(CS%cosphasesal, G%Domain) !Joe added
+    call pass_var(CS%sinphasesal, G%Domain) !Joe added
+    call pass_var(CS%ampsal,G%Domain) !Joe added
+!   if (CS%debug) then
+!    call MOM_state_chksum("Before phase and amp",phase, CS%ampsal)
+!   endif
       call find_in_files(tidal_input_files,"PHASE_SAL_"//trim(CS%const_name(c)),phase,G)
       call find_in_files(tidal_input_files,"AMP_SAL_"//trim(CS%const_name(c)),CS%ampsal(:,:,c),G)
       do j=js-1,je+1 ; do i=is-1,ie+1
@@ -371,8 +381,13 @@ subroutine tidal_forcing_init(Time, G, param_file, CS)
         CS%sinphasesal(i,j,c) = sin(phase(i,j)*deg_to_rad)
       enddo ; enddo
     enddo
-    call pass_var(phase,G%Domain) !Joe added
+    call pass_var(phase, G%Domain) !Joe added
+    call pass_var(CS%cosphasesal, G%Domain) !Joe added
+    call pass_var(CS%sinphasesal, G%Domain) !Joe added
     call pass_var(CS%ampsal,G%Domain) !Joe added
+!   if (CS%debug) then
+!    call MOM_state_chksum("After phase and amp", phase, CS%ampsal)
+!   endif
   endif
 
   if (CS%USE_PREV_TIDES) then
@@ -381,6 +396,13 @@ subroutine tidal_forcing_init(Time, G, param_file, CS)
     allocate(CS%amp_prev(isd:ied,jsd:jed,nc))
     do c=1,nc
       ! Read variables with names like PHASE_PREV_M2 and AMP_PREV_M2.
+    call pass_var(phase,G%Domain) !Joe added
+    call pass_var(CS%cosphase_prev,G%Domain) !Joe added
+    call pass_var(CS%sinphase_prev,G%Domain) !Joe added
+    call pass_var(CS%amp_prev,G%Domain) !Joe added
+!   if (CS%debug) then
+!    call MOM_state_chksum("Before phase_prev and amp_prev", phase, CS%amp_prev)
+!   endif
       call find_in_files(tidal_input_files,"PHASE_PREV_"//trim(CS%const_name(c)),phase,G)
       call find_in_files(tidal_input_files,"AMP_PREV_"//trim(CS%const_name(c)),CS%amp_prev(:,:,c),G)
       do j=js-1,je+1 ; do i=is-1,ie+1
@@ -389,7 +411,12 @@ subroutine tidal_forcing_init(Time, G, param_file, CS)
       enddo ; enddo
     enddo
     call pass_var(phase,G%Domain) !Joe added
+    call pass_var(CS%cosphase_prev,G%Domain) !Joe added
+    call pass_var(CS%sinphase_prev,G%Domain) !Joe added
     call pass_var(CS%amp_prev,G%Domain) !Joe added
+!   if (CS%debug) then
+!    call MOM_state_chksum("After phase_prev and amp_prev", phase, CS%amp_prev)
+!   endif
   endif
 
   id_clock_tides = cpu_clock_id('(Ocean tides)', grain=CLOCK_MODULE)
