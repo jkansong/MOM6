@@ -489,6 +489,7 @@ subroutine init_topodrag(fath, t11, t12, t21, t22, ss, &
    integer i,j
    real frmin, frmax, frclp, taulin, taup, taun, gterm
    real dummy1, frcrit, anonlin, beta, gamma1, omega1
+   real rnew
 
    real PI
   character(len=30) :: mod = "init_topodrag" ! This subroutine's name.
@@ -496,6 +497,7 @@ subroutine init_topodrag(fath, t11, t12, t21, t22, ss, &
 !   
    frcrit=1.0
    anonlin=10.0
+   rnew = 1.0/(3.8*3600.0*24.0) ! (3.8day)^(-1) decay rate as in Ansong et al 2015
    beta=1.0
    gamma1=0.35
 !   omega1=1.405189*0.0001
@@ -566,7 +568,8 @@ subroutine init_topodrag(fath, t11, t12, t21, t22, ss, &
         taup =  ( frclp**(gamma1+2.0)-frmin**(gamma1+2.0) )/(gamma1+2.0)+gterm 
         taun = anonlin*(1.0/(beta+1.0))*((1.0/(gamma1+1.0))*( frmax**(gamma1+1.0)-frclp**(gamma1+1.0) )-gterm)
         
-        dragfac(i,j) = dragmask(i,j)*ssharmonic(i,j)*(taup+taun)/taulin
+       ! dragfac(i,j) = dragmask(i,j)*ssharmonic(i,j)*(taup+taun)/taulin
+       dragfac(i,j) = dragmask(i,j)*rnew
         
       endif
       
@@ -630,12 +633,13 @@ subroutine init_topodrag(fath, t11, t12, t21, t22, ss, &
          dummy2 = 1.0
        endif
        
-       dummy3 = alin*dragfac(i,j)*dt/dummy2
+!       dummy3 = alin*dragfac(i,j)*dt/dummy2
+       dummy3 = -alin*dragfac(i,j)*dt !negative added for d11, etc 
 
-       d11 = t11(i,j)*dummy3
-       d21 = t21(i,j)*dummy3
-       d12 = t12(i,j)*dummy3
-       d22 = t22(i,j)*dummy3
+       d11 = dummy3 !t11(i,j)*dummy3
+       d21 = 0.0    !t21(i,j)*dummy3
+       d12 = 0.0    !t12(i,j)*dummy3
+       d22 = dummy3 !t22(i,j)*dummy3
        rnorm = (1.0-d11)*(1.0-d22)-d21*d12
        deltaum(i,j) = -um(i,j)+(um(i,j)*(1.0-d22)+vm(i,j)*d21)/rnorm
        deltavm(i,j) = -vm(i,j)+(vm(i,j)*(1.0-d11)+um(i,j)*d12)/rnorm
