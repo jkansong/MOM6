@@ -489,13 +489,14 @@ subroutine init_topodrag(fath, t11, t12, t21, t22, ss, &
    integer i,j
    real frmin, frmax, frclp, taulin, taup, taun, gterm
    real dummy1, frcrit, anonlin, beta, gamma1, omega1
-
+!   real rnew
    real PI
   character(len=30) :: mod = "init_topodrag" ! This subroutine's name.
    PI = 4.0*atan(1.0)
 !   
    frcrit=1.0
-   anonlin=10.0
+   anonlin=10.0 
+  ! rnew = 1.0/(3.8*3600*24) ! (3.8day)^(-1) decay rate as in Ansong et al 2015
    beta=1.0
    gamma1=0.35
 !   omega1=1.405189*0.0001
@@ -567,6 +568,7 @@ subroutine init_topodrag(fath, t11, t12, t21, t22, ss, &
         taun = anonlin*(1.0/(beta+1.0))*((1.0/(gamma1+1.0))*( frmax**(gamma1+1.0)-frclp**(gamma1+1.0) )-gterm)
         
         dragfac(i,j) = dragmask(i,j)*ssharmonic(i,j)*(taup+taun)/taulin
+       ! dragfac(i,j) = dragmask(i,j)*rnew
         
       endif
       
@@ -609,8 +611,8 @@ subroutine init_topodrag(fath, t11, t12, t21, t22, ss, &
   Isq = G%IscB ; Ieq = G%IecB ; Jsq = G%JscB ; Jeq = G%JecB
   Isp = G%Isd; Iep =G%Ied; Jsp = G%Jsd; Jep = G%Jed
 
-  !!alin=4.0
-  alin = G%alinj !defined in /core/MOM_grid.F90,
+!!  alin=4.0
+   alin = G%alinj !defined in /core/MOM_grid.F90,
                  !value of DRAG_STRENGTH in MOM_input
 
    do j=Jsp+1,Jep; do I=Isp+1,Iep    ! do j=js,je; do I=Isq,Ieq
@@ -630,7 +632,8 @@ subroutine init_topodrag(fath, t11, t12, t21, t22, ss, &
          dummy2 = 1.0
        endif
        
-       dummy3 = alin*dragfac(i,j)*dt/dummy2
+       dummy3 = alin*dragfac(i,j)*dt 
+!       dummy3 = -alin*dragfac(i,j)*dt !negative added for d11, etc 
 
        d11 = t11(i,j)*dummy3
        d21 = t21(i,j)*dummy3
