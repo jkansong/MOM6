@@ -632,7 +632,7 @@ subroutine init_topodrag(fath, t11, t12, t21, t22, ss, &
          dummy2 = 1.0
        endif
        
-       dummy3 = alin*dragfac(i,j)*dt 
+       dummy3 = alin*dragfac(i,j)*dt/dummy2  
 !       dummy3 = -alin*dragfac(i,j)*dt !negative added for d11, etc 
 
        d11 = t11(i,j)*dummy3
