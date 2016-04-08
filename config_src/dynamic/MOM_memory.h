@@ -30,7 +30,7 @@
 #define NIPROC_ 12 !NONSENSE_NIPROC 
                                !    NIPROC_ is the number of processors in the
                                !  x-direction.
-#define NJPROC_ 5 !NONSENSE_NJPROC 
+#define NJPROC_ 10 !NONSENSE_NJPROC 
                                !    NJPROC_ is the number of processors in the
                                !  y-direction.
 
