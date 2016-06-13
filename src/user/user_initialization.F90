@@ -363,15 +363,16 @@ end subroutine set_rotation_fath
 ! -----------------------------------------------------------------------------
 ! endJoe
 ! Joe
-subroutine MOM_read_topodrag(t11, t12,t21,t22,hkmin,hkmax,ss,dragmask, &
-                                       G, PF)
-  real, dimension(NIMEM_,NJMEM_), intent(out) :: t11
-  real, dimension(NIMEM_,NJMEM_), intent(out) :: t12
-  real, dimension(NIMEM_,NJMEM_), intent(out) :: t21
-  real, dimension(NIMEM_,NJMEM_), intent(out) :: t22
-  real, dimension(NIMEM_,NJMEM_), intent(out) :: hkmin
-  real, dimension(NIMEM_,NJMEM_), intent(out) :: hkmax
-  real, dimension(NIMEM_,NJMEM_), intent(out) :: ss
+subroutine MOM_read_topodrag(dragmask, G, PF)
+!!subroutine MOM_read_topodrag(t11, t12,t21,t22,hkmin,hkmax,ss,dragmask, &
+!!                                       G, PF)
+!  real, dimension(NIMEM_,NJMEM_), intent(out) :: t11
+!  real, dimension(NIMEM_,NJMEM_), intent(out) :: t12
+!  real, dimension(NIMEM_,NJMEM_), intent(out) :: t21
+!  real, dimension(NIMEM_,NJMEM_), intent(out) :: t22
+!  real, dimension(NIMEM_,NJMEM_), intent(out) :: hkmin
+!  real, dimension(NIMEM_,NJMEM_), intent(out) :: hkmax
+!  real, dimension(NIMEM_,NJMEM_), intent(out) :: ss
   real, dimension(NIMEM_,NJMEM_), intent(out) :: dragmask
   type(ocean_grid_type),          intent(in)  :: G
   type(param_file_type),          intent(in)  :: PF
@@ -383,23 +384,25 @@ subroutine MOM_read_topodrag(t11, t12,t21,t22,hkmin,hkmax,ss,dragmask, &
   character(len=40)  :: mod = "MOM_read_topodrag" ! This subroutine's name.
 !  character(len=200) :: config
 
-   call read_topodrag(t11,t12,t21,t22,hkmin,hkmax,ss,dragmask, G, PF)
+!!   call read_topodrag(t11,t12,t21,t22,hkmin,hkmax,ss,dragmask, G, PF)
+   call read_topodrag( dragmask, G, PF)
 
 end subroutine MOM_read_topodrag
 ! endJoe
 !!----------------------------------------------------------------------------
 !! Joe
 ! -----------------------------------------------------------------------------
-subroutine read_topodrag(t11,t12,t21,t22,hkmin,hkmax,ss,dragmask, &
-                                       G, param_file )
-  real, dimension(NIMEM_,NJMEM_), intent(out) :: t11
-  real, dimension(NIMEM_,NJMEM_), intent(out) :: t12
-  real, dimension(NIMEM_,NJMEM_), intent(out) :: t21
-  real, dimension(NIMEM_,NJMEM_), intent(out) :: t22
-  real, dimension(NIMEM_,NJMEM_), intent(out) :: hkmin
-  real, dimension(NIMEM_,NJMEM_), intent(out) :: hkmax
+subroutine read_topodrag( dragmask, G, param_file )
+!!subroutine read_topodrag(t11,t12,t21,t22,hkmin,hkmax,ss,dragmask, &
+!!                                       G, param_file )
+!  real, dimension(NIMEM_,NJMEM_), intent(out) :: t11
+!  real, dimension(NIMEM_,NJMEM_), intent(out) :: t12
+!  real, dimension(NIMEM_,NJMEM_), intent(out) :: t21
+!  real, dimension(NIMEM_,NJMEM_), intent(out) :: t22
+!  real, dimension(NIMEM_,NJMEM_), intent(out) :: hkmin
+!  real, dimension(NIMEM_,NJMEM_), intent(out) :: hkmax
   real, dimension(NIMEM_,NJMEM_), intent(out) :: dragmask
-  real, dimension(NIMEM_,NJMEM_), intent(out) :: ss
+!  real, dimension(NIMEM_,NJMEM_), intent(out) :: ss
   type(ocean_grid_type),          intent(in)  :: G
   type(param_file_type),          intent(in)  :: param_file
 ! Arguments: t11          - tensor component t11
@@ -417,47 +420,42 @@ subroutine read_topodrag(t11,t12,t21,t22,hkmin,hkmax,ss,dragmask, &
   call get_param(param_file, mod, "INPUTDIR", inputdir, default=".")
   inputdir = slasher(inputdir)
 
-!  filename = trim(inputdir)//trim(topo_file)
-  filename = trim(inputdir)//trim("t11_86to82.nc")
-!  call log_param(param_file, mod, "INPUTDIR/TOPO_FILE", filename)
-!  call log_param(param_file, mod, "INPUTDIR", filename)
-  if (.not.file_exists(filename, G%Domain)) call MOM_error(FATAL, &
-       " initialize_topodrag: Unable to open "//trim(filename))
-!  call read_data(filename,trim(topo_varname),D,domain=G%Domain%mpp_domain)
-  call read_data(filename,trim('T11'),t11,domain=G%Domain%mpp_domain)
-!  call callTree_leave(trim(mod)//'()')
-!!
-  filename = trim(inputdir)//trim("t12_86to82.nc")
-  if (.not.file_exists(filename, G%Domain)) call MOM_error(FATAL, &
-       " initialize_topodrag: Unable to open "//trim(filename))
-  call read_data(filename,trim('T12'),t12,domain=G%Domain%mpp_domain) 
-!!
-  filename = trim(inputdir)//trim("t21_86to82.nc")
-  if (.not.file_exists(filename, G%Domain)) call MOM_error(FATAL, &
-       " initialize_topodrag: Unable to open "//trim(filename))
-  call read_data(filename,trim('T21'),t21,domain=G%Domain%mpp_domain)
- !!
-  filename = trim(inputdir)//trim("t22_86to82.nc")
-  if (.not.file_exists(filename, G%Domain)) call MOM_error(FATAL, &
-       " initialize_topodrag: Unable to open "//trim(filename))
-  call read_data(filename,trim('T22'),t22,domain=G%Domain%mpp_domain)
- !!
-  filename = trim(inputdir)//trim("hkmin_86to82.nc")
-  if (.not.file_exists(filename, G%Domain)) call MOM_error(FATAL, &
-       " initialize_topodrag: Unable to open "//trim(filename))
-  call read_data(filename,trim('del2chimin'),hkmin,domain=G%Domain%mpp_domain)
- !!
-  filename = trim(inputdir)//trim("hkmax_86to82.nc")
-  if (.not.file_exists(filename, G%Domain)) call MOM_error(FATAL, &
-       " initialize_topodrag: Unable to open "//trim(filename))
-  call read_data(filename,trim('del2chimax'),hkmax,domain=G%Domain%mpp_domain)
-
- !!
-  filename = trim(inputdir)//trim("n_matrix_levitus98_86to82.nc")
-  if (.not.file_exists(filename, G%Domain)) call MOM_error(FATAL, &
-       " initialize_topodrag: Unable to open "//trim(filename))
-  call read_data(filename,trim('N'),ss,domain=G%Domain%mpp_domain)
- !!
+!  filename = trim(inputdir)//trim("t11_86to82.nc")
+!  if (.not.file_exists(filename, G%Domain)) call MOM_error(FATAL, &
+!       " initialize_topodrag: Unable to open "//trim(filename))
+!  call read_data(filename,trim('T11'),t11,domain=G%Domain%mpp_domain)
+!!!
+!  filename = trim(inputdir)//trim("t12_86to82.nc")
+!  if (.not.file_exists(filename, G%Domain)) call MOM_error(FATAL, &
+!       " initialize_topodrag: Unable to open "//trim(filename))
+!  call read_data(filename,trim('T12'),t12,domain=G%Domain%mpp_domain) 
+!!!
+!  filename = trim(inputdir)//trim("t21_86to82.nc")
+!  if (.not.file_exists(filename, G%Domain)) call MOM_error(FATAL, &
+!       " initialize_topodrag: Unable to open "//trim(filename))
+!  call read_data(filename,trim('T21'),t21,domain=G%Domain%mpp_domain)
+! !!
+!  filename = trim(inputdir)//trim("t22_86to82.nc")
+!  if (.not.file_exists(filename, G%Domain)) call MOM_error(FATAL, &
+!       " initialize_topodrag: Unable to open "//trim(filename))
+!  call read_data(filename,trim('T22'),t22,domain=G%Domain%mpp_domain)
+! !!
+!  filename = trim(inputdir)//trim("hkmin_86to82.nc")
+!  if (.not.file_exists(filename, G%Domain)) call MOM_error(FATAL, &
+!       " initialize_topodrag: Unable to open "//trim(filename))
+!  call read_data(filename,trim('del2chimin'),hkmin,domain=G%Domain%mpp_domain)
+! !!
+!  filename = trim(inputdir)//trim("hkmax_86to82.nc")
+!  if (.not.file_exists(filename, G%Domain)) call MOM_error(FATAL, &
+!       " initialize_topodrag: Unable to open "//trim(filename))
+!  call read_data(filename,trim('del2chimax'),hkmax,domain=G%Domain%mpp_domain)
+!
+! !!
+!  filename = trim(inputdir)//trim("n_matrix_levitus98_86to82.nc")
+!  if (.not.file_exists(filename, G%Domain)) call MOM_error(FATAL, &
+!       " initialize_topodrag: Unable to open "//trim(filename))
+!  call read_data(filename,trim('N'),ss,domain=G%Domain%mpp_domain)
+! !!
   filename = trim(inputdir)//trim("dragmask100m_86to82.nc")
   if (.not.file_exists(filename, G%Domain)) call MOM_error(FATAL, &
        " initialize_topodrag: Unable to open "//trim(filename))
@@ -467,22 +465,24 @@ end subroutine read_topodrag
 !endJoe
 
 !!--------------------------------------------------------------------   
-subroutine init_topodrag(fath, t11, t12, t21, t22, ss, & 
-                           hkmin, hkmax, dragmask, dragfac, & 
-                           ssharmonic, G,param_file)
+subroutine init_topodrag(fath, dragmask, dragfac, & 
+                           G,param_file)
+!!subroutine init_topodrag(fath, t11, t12, t21, t22, ss, & 
+!!                           hkmin, hkmax, dragmask, dragfac, & 
+!!                           ssharmonic, G,param_file)
 			   
    type(ocean_grid_type), intent(in)  :: G
    real, dimension(NIMEM_,NJMEM_) :: fath        !/* The Coriolis parameter in s-1
    real, dimension(NIMEM_,NJMEM_) :: dragfac     !/* topo drag factor */
    real, dimension(NIMEM_,NJMEM_) :: dragmask    !
-   real, dimension(NIMEM_,NJMEM_) :: t11   !
-   real, dimension(NIMEM_,NJMEM_) :: t12   !
-   real, dimension(NIMEM_,NJMEM_) :: t21   !
-   real, dimension(NIMEM_,NJMEM_) :: t22   !
-   real, dimension(NIMEM_,NJMEM_) :: hkmin  !
-   real, dimension(NIMEM_,NJMEM_) :: hkmax  !
-   real, dimension(NIMEM_,NJMEM_) :: ss !
-   real, dimension(NIMEM_,NJMEM_) :: ssharmonic !
+!   real, dimension(NIMEM_,NJMEM_) :: t11   !
+!   real, dimension(NIMEM_,NJMEM_) :: t12   !
+!   real, dimension(NIMEM_,NJMEM_) :: t21   !
+!   real, dimension(NIMEM_,NJMEM_) :: t22   !
+!   real, dimension(NIMEM_,NJMEM_) :: hkmin  !
+!   real, dimension(NIMEM_,NJMEM_) :: hkmax  !
+!   real, dimension(NIMEM_,NJMEM_) :: ss !
+!   real, dimension(NIMEM_,NJMEM_) :: ssharmonic !
  
    type(param_file_type), intent(in)  :: param_file
 
@@ -508,22 +508,22 @@ subroutine init_topodrag(fath, t11, t12, t21, t22, ss, &
                    " are true.", units="s-1", default=1.405198e-4)
 !!    call set_rotation_fath(fath, G, param_file)
   
-   do j= G%jsd,G%jed    !1,1345
-    do i= G%isd,G%ied   !1,2880
-
-   !  calculate simple harmonic equivalent of static stability 
-
-      if (omega1 > abs(fath(i,j))) then
-        ssharmonic(i,j)=ss(i,j)* &
-         ( (omega1*omega1-fath(i,j)*fath(i,j))**0.5)*(1.0/omega1)
-      endif
-      
-      if (omega1 <= abs(fath(i,j))) then
-          ssharmonic(i,j)=0.0
-      endif
-
-   enddo
-  enddo 
+!   do j= G%jsd,G%jed    !1,1345
+!    do i= G%isd,G%ied   !1,2880
+!
+!   !  calculate simple harmonic equivalent of static stability 
+!
+!      if (omega1 > abs(fath(i,j))) then
+!        ssharmonic(i,j)=ss(i,j)* &
+!         ( (omega1*omega1-fath(i,j)*fath(i,j))**0.5)*(1.0/omega1)
+!      endif
+!      
+!      if (omega1 <= abs(fath(i,j))) then
+!          ssharmonic(i,j)=0.0
+!      endif
+!
+!   enddo
+!  enddo 
 !!------------------  
    do j=G%jsd,G%jed
     do i=G%isd,G%ied 
@@ -532,41 +532,38 @@ subroutine init_topodrag(fath, t11, t12, t21, t22, ss, &
 
        if (omega1 > abs(fath(i,j))) then
       
-        frmin = 0.5*ssharmonic(i,j)*hkmin(i,j)* &
-                   omega1/(omega1*omega1-fath(i,j)*fath(i,j))
-        frmax = 0.5*ssharmonic(i,j)*hkmax(i,j)* &
-                   omega1/(omega1*omega1-fath(i,j)*fath(i,j))
+!        frmin = 0.5*ssharmonic(i,j)*hkmin(i,j)* &
+!                   omega1/(omega1*omega1-fath(i,j)*fath(i,j))
+!        frmax = 0.5*ssharmonic(i,j)*hkmax(i,j)* &
+!                   omega1/(omega1*omega1-fath(i,j)*fath(i,j))
          
-  !      if (frmax < frmin+1.0e-4) then
-  !        frmax = frmin+1.0e-4
-  !      endif
-        if (frmax >= frmin+1.0e-4) then
-            frmax = frmax
-        else
-           frmax = frmin+1.0e-4
-        endif
-   
-        if (frmin >= frcrit) then
-          dummy1 = frmin
-        else
-          dummy1 = frcrit
-        endif
-        
-        if (frmax <= dummy1) then
-          frclp = frmax
-        else
-        frclp = dummy1
-        endif
+!        if (frmax >= frmin+1.0e-4) then
+!            frmax = frmax
+!        else
+!           frmax = frmin+1.0e-4
+!        endif
+!   
+!        if (frmin >= frcrit) then
+!          dummy1 = frmin
+!        else
+!          dummy1 = frcrit
+!        endif
+!        
+!        if (frmax <= dummy1) then
+!          frclp = frmax
+!        else
+!        frclp = dummy1
+!        endif
         
         !!get total drag in linear limit  
         
-        taulin =(frmax**(gamma1+2.0)-frmin**(gamma1+2.0))/(gamma1+2.0)
-        gterm  =(frmax**(gamma1-beta)-frclp**(gamma1-beta))/(gamma1-beta)
+!        taulin =(frmax**(gamma1+2.0)-frmin**(gamma1+2.0))/(gamma1+2.0)
+!        gterm  =(frmax**(gamma1-beta)-frclp**(gamma1-beta))/(gamma1-beta)
         
         !!get propagating and nonpropagating parts of total drag 
         
-        taup =  ( frclp**(gamma1+2.0)-frmin**(gamma1+2.0) )/(gamma1+2.0)+gterm 
-        taun = anonlin*(1.0/(beta+1.0))*((1.0/(gamma1+1.0))*( frmax**(gamma1+1.0)-frclp**(gamma1+1.0) )-gterm)
+!        taup =  ( frclp**(gamma1+2.0)-frmin**(gamma1+2.0) )/(gamma1+2.0)+gterm 
+!        taun = anonlin*(1.0/(beta+1.0))*((1.0/(gamma1+1.0))*( frmax**(gamma1+1.0)-frclp**(gamma1+1.0) )-gterm)
         
        ! dragfac(i,j) = dragmask(i,j)*ssharmonic(i,j)*(taup+taun)/taulin
        dragfac(i,j) = dragmask(i,j)*rnew
@@ -583,7 +580,8 @@ subroutine init_topodrag(fath, t11, t12, t21, t22, ss, &
   end subroutine init_topodrag
 !--------------------------------------------------------------------------
 !! Joe
- subroutine topo_drag(u, v, h, dt, G, t11, t12, t21, t22, dragfac)
+ subroutine topo_drag(u, v, h, dt, G, dragfac)
+!! subroutine topo_drag(u, v, h, dt, G, t11, t12, t21, t22, dragfac)
 
   type(ocean_grid_type), intent(in)  :: G
   real dt
@@ -592,10 +590,10 @@ subroutine init_topodrag(fath, t11, t12, t21, t22, ss, &
   real, dimension(NIMEM_,NJMEM_,NKMEM_), target,  intent(inout) :: h
 
   real, dimension(NIMEM_,NJMEM_), intent(in) :: dragfac     !/* topo drag factor */
-  real, dimension(NIMEM_,NJMEM_), intent(in) :: t11   !
-  real, dimension(NIMEM_,NJMEM_), intent(in) :: t12   !
-  real, dimension(NIMEM_,NJMEM_), intent(in) :: t21   !
-  real, dimension(NIMEM_,NJMEM_), intent(in) :: t22   !
+!  real, dimension(NIMEM_,NJMEM_), intent(in) :: t11   !
+!  real, dimension(NIMEM_,NJMEM_), intent(in) :: t12   !
+!  real, dimension(NIMEM_,NJMEM_), intent(in) :: t21   !
+!  real, dimension(NIMEM_,NJMEM_), intent(in) :: t22   !
      
   real, dimension(SZI_(G),SZJ_(G)) :: um 
   real, dimension(SZI_(G),SZJ_(G)) :: vm
