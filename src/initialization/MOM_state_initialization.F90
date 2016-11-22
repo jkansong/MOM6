@@ -189,6 +189,10 @@ subroutine MOM_initialize_state(u, v, h, tv, Time, G, PF, dirs, &
   if (use_topodrag) then
   call set_rotation_fath(G%Coriolish, G, PF)
   
+!  call MOM_read_topodrag( G%dragmask, G, PF)
+
+!  call init_topodrag(G%Coriolish, G%dragmask, G%dragfac, & 
+!                           G, PF)
   call MOM_read_topodrag(G%t11,G%t12,G%t21,G%t22,G%hkmin,G%hkmax, & 
                                G%ss,G%dragmask, G, PF)
 
