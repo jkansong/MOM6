@@ -188,13 +188,18 @@ subroutine MOM_initialize_state(u, v, h, tv, Time, G, PF, dirs, &
 !  of the h grid points, in s-1.
   if (use_topodrag) then
   call set_rotation_fath(G%Coriolish, G, PF)
-  
-  call MOM_read_topodrag(G%t11,G%t12,G%t21,G%t22,G%hkmin,G%hkmax, & 
-                               G%ss,G%dragmask, G, PF)
 
-  call init_topodrag(G%Coriolish, G%t11, G%t12, G%t21, G%t22, G%ss, & 
-                      G%hkmin, G%hkmax, G%dragmask, G%dragfac, & 
-                           G%ssharmonic, G, PF)
+  call MOM_read_topodrag( G%dragmask, G, PF)
+
+  call init_topodrag(G%Coriolish, G%dragmask, G%dragfac, & 
+                           G, PF)
+  
+!  call MOM_read_topodrag(G%t11,G%t12,G%t21,G%t22,G%hkmin,G%hkmax, & 
+!                               G%ss,G%dragmask, G, PF)
+!
+!  call init_topodrag(G%Coriolish, G%t11, G%t12, G%t21, G%t22, G%ss, & 
+!                      G%hkmin, G%hkmax, G%dragmask, G%dragfac, & 
+!                           G%ssharmonic, G, PF)
   endif
 ! endJoe
 !====================================================================
