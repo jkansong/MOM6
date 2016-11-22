@@ -394,13 +394,17 @@ subroutine step_MOM_dyn_unsplit(u, v, h, tv, visc, Time_local, dt, fluxes, &
   if (CS%use_topodrag) then
     call pass_var(h_av, G%Domain)
    if (CS%debug) then
-    call MOM_state_chksum("After topo_drag up,vp", up, vp, h_av,uh,vh,G)
+    call MOM_state_chksum("After topo_drag up,vp", up, vp, h_av, & 
+                 uh,vh,G)
    endif
-  call topo_drag(up, vp, h_av, dt_pred, G,G%t11,G%t12,G%t21,G%t22, G%dragfac)
+  call topo_drag(up, vp, h_av, dt_pred, G,G%t11,G%t12,G%t21,G%t22, &
+                     G%dragfac)
+!!  call topo_drag(up, vp, h_av, dt_pred, G, G%dragfac)
   call pass_vector(up, vp, G%Domain)
 
    if (CS%debug) then
-    call MOM_state_chksum("After topo_drag up,vp", up, vp, h_av, uh,vh,G) 
+    call MOM_state_chksum("After topo_drag up,vp", up, vp, h_av, & 
+             uh,vh,G) 
    endif
 
   endif
@@ -473,6 +477,7 @@ subroutine step_MOM_dyn_unsplit(u, v, h, tv, visc, Time_local, dt, fluxes, &
     call MOM_state_chksum("After topo_drag uup,vvp", upp,vpp,hp,uh,vh,G)
    endif
   call topo_drag(upp, vpp, hp, dt*0.5, G,G%t11,G%t12,G%t21,G%t22, G%dragfac)
+!!  call topo_drag(upp, vpp, hp, dt*0.5, G, G%dragfac)
   call pass_vector(upp, vpp, G%Domain)
    if (CS%debug) then
     call MOM_state_chksum("After topo_drag uup,vvp", upp,vpp,hp,uh,vh,G)
@@ -551,6 +556,7 @@ subroutine step_MOM_dyn_unsplit(u, v, h, tv, visc, Time_local, dt, fluxes, &
     call MOM_state_chksum("After topo_drag u,v", u,v,h_av,uh,vh,G)
    endif
   call topo_drag(u, v, h_av, dt, G,G%t11,G%t12,G%t21,G%t22, G%dragfac)
+!!  call topo_drag(u, v, h_av, dt, G, G%dragfac)
   call pass_vector(u, v, G%Domain)
    if (CS%debug) then
     call MOM_state_chksum("After topo_drag u,v", u,v,h_av,uh,vh,G)
