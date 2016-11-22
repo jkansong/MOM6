@@ -172,8 +172,10 @@ subroutine tidal_forcing_init(Time, G, param_file, CS)
     lon_rad(i,j) = G%geoLonT(i,j)*deg_to_rad
   enddo ; enddo
   do j=js-1,je+1 ; do i=is-1,ie+1
-    CS%sin_struct(i,j,1) = -sin(2.0*lat_rad(i,j)) * cos(lon_rad(i,j))
-    CS%cos_struct(i,j,1) = sin(2.0*lat_rad(i,j)) * sin(lon_rad(i,j))
+!    CS%sin_struct(i,j,1) = -sin(2.0*lat_rad(i,j)) * cos(lon_rad(i,j)) !Joe
+!    CS%cos_struct(i,j,1) = sin(2.0*lat_rad(i,j)) * sin(lon_rad(i,j)) !Joe
+    CS%sin_struct(i,j,1) = -sin(2.0*lat_rad(i,j)) * sin(lon_rad(i,j))
+    CS%cos_struct(i,j,1) = sin(2.0*lat_rad(i,j)) * cos(lon_rad(i,j))
     CS%sin_struct(i,j,2) = -cos(lat_rad(i,j))**2 * sin(2.0*lon_rad(i,j))
     CS%cos_struct(i,j,2) = cos(lat_rad(i,j))**2 * cos(2.0*lon_rad(i,j))
     CS%sin_struct(i,j,3) = 0.0
